@@ -4,6 +4,7 @@ import argparse
 import socket
 import sys
 
+import message_parsers
 from mock_dstar_socket import MockDRatsSocket
 
 parser = argparse.ArgumentParser(description='Process some integers.')
@@ -24,62 +25,40 @@ class colors:
     X = '\033[0m'
 
 # jerry-rigged testing
-if args.testing == True:
+if args.testing:
     s = MockDRatsSocket()
 else:
     s = socket.socket()
     s.connect((args.host_name, args.port_number))
 
 found_beginning = False
-body_array = []
+bffr = ''
 messages = []
 
-
-def search_drats_message(buffer):
-    HEAD = '[SOB]'
-    TAIL = '[EOB]'
-    head_tail_length = len(HEAD) + len(TAIL)
-    if len(buffer) > head_tail_length and HEAD in buffer and TAIL in buffer[buffer.index(HEAD):]:
-        message_start = buffer.index(HEAD) + len(HEAD)
-        message_end = buffer[message_start:].index(TAIL)
-        print "message_start", message_start
-        print "message_end", message_end
-        message = buffer[message_start:message_end]
-        buffer = buffer[:message_start] + buffer[message_end + len(TAIL):]
-        return (message, buffer)
-    return (None, buffer)
-
-def search_dprs_message(buffer):
-    HEAD = "$GPGGA"
-    TAIL = "\n"
-    head_tail_length = len(HEAD) + len(TAIL)
-    if len(buffer) > head_tail_length and HEAD in buffer and TAIL in buffer:
-        message = buffer[ buffer.index(HEAD):buffer.index(TAIL) ]
-        buffer = buffer[:buffer.index(HEAD)] + buffer[buffer.index(TAIL) + len(TAIL):]
-        return (message, buffer)
-    return (None, buffer)
-
 understandable_messages = {
-    'dprs': search_dprs_message,
-    'drats': search_drats_message
+    'dprs': message_parsers.search_dprs_message,
+    'drats': message_parsers.search_drats_message
 }
 
 while s:
     char = s.recv(1)
     if not char: break
-    body_array.append(char)
-    buffer = ''.join(body_array)
-    sys.stdout.write('RECVd so far: %s%s%s\n' % (colors.RED, ''.join(buffer), colors.X))
+    bffr += char
+    #sys.stdout.write('RECVd so far: %s%s%s\n' % (colors.RED, ''.join(bffr), colors.X))
 
     for message_type, function in understandable_messages.iteritems():
-        print "Searching for %s" % message_type
-        message, buffer = function(buffer)
+        message, bffr = function(bffr)
         if message:
-            print "%sFound %s string: %s%s%s" % (
+            print "%s%s message: %s%s%s" % (
                 colors.GREEN,
                 message_type,
                 colors.BLUE,
                 message,
                 colors.X)
-        print "Buffer: %s%s%s" % (colors.RED, buffer, colors.X)
-        messages.append((message_type, message))
+            messages.append((message_type, message))
+
+if args.testing:
+    print "Test Results:"
+    print "\tDPRS ok: ", ('dprs', '$GPGGA,002442,4003.726,N,7505.448,W,1,3,0,0,M,0,M,,*76') in messages
+    print "\tDRATS ok: ", ('drats', '"=@=@=@n=@YN0DEC~~~CQCQCQ~~[QST] Sheboygan, (WI) Weather Info & Ratflector - Network, host: 59.54.54.53, port 8801') in messages
+

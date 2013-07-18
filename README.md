@@ -1,1 +1,1 @@
-DStar experimentation tools
+Unix command line tools for DStar troubleshooting
