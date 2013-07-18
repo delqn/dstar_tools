@@ -4,10 +4,12 @@ import argparse
 import socket
 import sys
 
+from mock_dstar_socket import MockDRatsSocket
+
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('host_name', metavar='HOST_NAME', type=str, help='Host Name')
 parser.add_argument('port_number', metavar='PORT_NUMBER', type=int, help='Port Number')
-parser.add_argument('testing', metavar='TESTING', type=bool, help='Unit Testing')
+parser.add_argument('--testing', metavar='TESTING', type=bool, help='Unit Testing', default=False)
 args = parser.parse_args()
 
 print args.host_name
@@ -21,21 +23,9 @@ class colors:
     RED = '\033[91m'
     X = '\033[0m'
 
-
-class MockSocket:
-    test_string = """100 Authentication not required
-$GPGGA,002442,4003.726,N,7505.448,W,1,3,0,0,M,0,M,,*76
-[SOB]"=@=@=@n=@YN0DEC~~~CQCQCQ~~[QST] Sheboygan, (WI) Weather Info & Ratflector - Network, host: 59.54.54.53, port 8801[EOB]"""
-    index = -1
-    def recv(self, byte):
-        self.index += 1
-        if self.index >= len(self.test_string):
-            return
-        return self.test_string[self.index]
-
 # jerry-rigged testing
 if args.testing == True:
-    s = MockSocket()
+    s = MockDRatsSocket()
 else:
     s = socket.socket()
     s.connect((args.host_name, args.port_number))
@@ -49,9 +39,13 @@ def search_drats_message(buffer):
     HEAD = '[SOB]'
     TAIL = '[EOB]'
     head_tail_length = len(HEAD) + len(TAIL)
-    if len(buffer) > head_tail_length and HEAD in buffer and TAIL in buffer:
-        message = buffer[ buffer.index(HEAD) + len(HEAD):buffer.rindex(TAIL) ]
-        buffer = buffer[:buffer.index(HEAD)] + buffer[buffer.rindex(TAIL) + len(TAIL):]
+    if len(buffer) > head_tail_length and HEAD in buffer and TAIL in buffer[buffer.index(HEAD):]:
+        message_start = buffer.index(HEAD) + len(HEAD)
+        message_end = buffer[message_start:].index(TAIL)
+        print "message_start", message_start
+        print "message_end", message_end
+        message = buffer[message_start:message_end]
+        buffer = buffer[:message_start] + buffer[message_end + len(TAIL):]
         return (message, buffer)
     return (None, buffer)
 
@@ -60,8 +54,8 @@ def search_dprs_message(buffer):
     TAIL = "\n"
     head_tail_length = len(HEAD) + len(TAIL)
     if len(buffer) > head_tail_length and HEAD in buffer and TAIL in buffer:
-        message = buffer[ buffer.index(HEAD):buffer.rindex(TAIL) ]
-        buffer = buffer[:buffer.index(HEAD)] + buffer[buffer.rindex(TAIL) + len(TAIL):]
+        message = buffer[ buffer.index(HEAD):buffer.index(TAIL) ]
+        buffer = buffer[:buffer.index(HEAD)] + buffer[buffer.index(TAIL) + len(TAIL):]
         return (message, buffer)
     return (None, buffer)
 
