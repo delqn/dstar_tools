@@ -5,6 +5,7 @@ import socket
 import sys
 
 import message_parsers
+from colors import colors
 from mock_dstar_socket import MockDRatsSocket
 
 parser = argparse.ArgumentParser(description='Process some integers.')
@@ -15,14 +16,6 @@ args = parser.parse_args()
 
 print args.host_name
 print args.port_number
-
-class colors:
-    PURPLE = '\033[95m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    X = '\033[0m'
 
 # jerry-rigged testing
 if args.testing:
@@ -49,16 +42,13 @@ while s:
     for message_type, function in understandable_messages.iteritems():
         message, bffr = function(bffr)
         if message:
-            print "%s%s message: %s%s%s" % (
-                colors.GREEN,
-                message_type,
-                colors.BLUE,
-                message,
-                colors.X)
             messages.append((message_type, message))
 
 if args.testing:
     print "Test Results:"
     print "\tDPRS ok: ", ('dprs', '$GPGGA,002442,4003.726,N,7505.448,W,1,3,0,0,M,0,M,,*76') in messages
-    print "\tDRATS ok: ", ('drats', '"=@=@=@n=@YN0DEC~~~CQCQCQ~~[QST] Sheboygan, (WI) Weather Info & Ratflector - Network, host: 59.54.54.53, port 8801') in messages
+    message = {'status': 'ok', 'message': {'magic_number': 34, 'sequence': 15680, 'checksum': 15680, 'destination': '~~CQCQCQ', 'is_compressed': False, 'length': 28221, 'session': 61, 'source': '@YN0DEC~', 'data': '~~[QST] Sheboygan, (WI) Weather Info & Ratflector - Network, host: 59.54.54.53, port 8801', 'message_type': 64}}
+    print "\tDRATS uncompressed ok: ", ('drats',message) in messages
 
+    message = {'status': 'ok', 'message': {'magic_number': 221, 'sequence': 15680, 'checksum': 15680, 'destination': '~~CQCQCQ', 'is_compressed': True, 'length': 28221, 'session': 61, 'source': '@YN0DEC~', 'data': '~~[QST] Sheboygan, (WI) Weather Info & Ratflector - Network, host: 59.54.54.53, port 8801', 'message_type': 64}}
+    print "\tDRATS compressed ok: ", ('drats',message) in messages

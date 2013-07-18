@@ -5,6 +5,7 @@ class MockDRatsSocket:
     test_string = """100 Authentication not required
 $GPGGA,002442,4003.726,N,7505.448,W,1,3,0,0,M,0,M,,*76
 [SOB]"=@=@=@n=@YN0DEC~~~CQCQCQ~~[QST] Sheboygan, (WI) Weather Info & Ratflector - Network, host: 59.54.54.53, port 8801[EOB]"""
+    test_string += """[SOB]\xdd=@=@=@n=@YN0DEC~~~CQCQCQx\x9c\xab\xab\x8b\x0e\x0c\x0e\x89U\x08\xceHM\xca\xafLO\xcc\xd3Q\xd0\x08\xf7\xd4T\x08OM,\xc9H-R\xf0\xccK\xcbWPS\x08J,I\xcbIM.\xc9/R\xd0U\xf0K-)\xcf/\xca\xd6Q\xc8\xc8/.\xb1R0\xb5\xd435\x01#c\x1d\x85\x82\xfc\xa2\x12\x05\x0b\x0b\x03C\x00)\xea\x1b\xb1[EOB]"""
     test_string_2 = """100 Authentication not required
 [SOB]"=@=@=@5=@FK2TJW~~~CQCQCQ~~[QST] Dansville, New York: 83 F (28 C) (Thu, 18 Jul 2013 00:54:00 GMT)[EOB]$$CRC9089,KA2PQJ>APRATS,DSTAR*:/015413h4128.61N/07429.01W>/A=000750ON D-RATS
 $GPGGA,215420,4003.726,N,7505.448,W,1,3,0,0,M,0,M,,*76
