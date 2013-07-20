@@ -5,8 +5,6 @@ import zlib
 
 from colors import colors
 
-STRUCT_FORMAT = "!BHBBHH8s8s"
-
 DRATS_HEAD = '[SOB]'
 DRATS_TAIL = '[EOB]'
 drats_head_len = len(DRATS_HEAD)
@@ -20,23 +18,30 @@ dprs_tail_len = len(DPRS_TAIL)
 
 
 def __parse_drats_message(packet):
-    msg = {}
-    magic_number = ord(packet[0])
+    msg = {'raw_data': packet}
 
-    if magic_number not in (0xDD, 0x22):
+    if ord(packet[0]) not in (0xDD, 0x22):
         return {'status': 'error', 'message': None}
     
     # add data
-    if magic_number == 0xDD:
+    if ord(packet[0]) == 0xDD:
         msg['is_compressed'] = True
         msg['data'] = zlib.decompress(packet[25:])
     else:
         msg['is_compressed'] = False
         msg['data'] = packet[25:]
 
-
     # unpack header
-    ordered_value_names = ('magic_number', 'sequence', 'session', 'message_type', 'checksum', 'length', 'source', 'destination') 
+    ordered_value_names = ('magic_number',
+                           'sequence',
+                           'session',
+                           'message_type',
+                           'checksum',
+                           'length',
+                           'source',
+                           'destination') 
+
+    STRUCT_FORMAT = "!BHBBHH8s8s"
     msg.update(dict(zip(ordered_value_names,
                         struct.unpack(STRUCT_FORMAT, packet[:25]))))
 
