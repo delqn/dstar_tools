@@ -4,7 +4,7 @@
 all: install-prepush lint
 
 .PHONY: lint
-lint:
+lint: clean test
 	pep8 dstartools/ ./*.py --exclude=mocks.py
 	pylint --rcfile=.pylintrc dstartools/ ./*.py
 
@@ -19,5 +19,5 @@ clean:
 	find . -name \*.pyc -delete
 
 .PHONY: test
-test: clean lint
+test:
 	nosetests $(find . -name "_test.py")
