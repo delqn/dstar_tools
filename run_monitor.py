@@ -4,22 +4,22 @@ import argparse
 import socket
 import sys
 
-import message_parsers
-from colors import colors
-from mock_dstar_socket import MockDRatsSocket
+from dstartools import colors, parser, mocks
 
-parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('host_name', metavar='HOST_NAME', type=str, help='Host Name')
-parser.add_argument('port_number', metavar='PORT_NUMBER', type=int, help='Port Number')
-parser.add_argument('--testing', metavar='TESTING', type=bool, help='Unit Testing', default=False)
-args = parser.parse_args()
+
+argparser = argparse.ArgumentParser(description='Process some integers.')
+argparser.add_argument('host_name', metavar='HOST_NAME', type=str, help='Host Name')
+argparser.add_argument('port_number', metavar='PORT_NUMBER', type=int, help='Port Number')
+argparser.add_argument('--testing', metavar='TESTING', type=bool, help='Unit Testing',
+                       default=False)
+args = argparser.parse_args()
 
 print args.host_name
 print args.port_number
 
 # jerry-rigged testing
 if args.testing:
-    s = MockDRatsSocket()
+    s = mocks.MockDRatsSocket()
 else:
     s = socket.socket()
     s.connect((args.host_name, args.port_number))
@@ -29,8 +29,8 @@ bffr = ''
 messages = []
 
 understandable_messages = {
-    'dprs': message_parsers.search_dprs_message,
-    'drats': message_parsers.search_drats_message
+    'dprs': parser.search_dprs_message,
+    'drats': parser.search_drats_message
 }
 
 while s:
