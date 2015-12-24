@@ -5,8 +5,8 @@ all: install-prepush lint
 
 .PHONY: lint
 lint:
-	pep8 ircddbclient/ ./*.py
-	pylint --rcfile=.pylintrc ircddbclient/ ./*.py
+	pep8 dstartools/ ./*.py --exclude=mocks.py
+	pylint --rcfile=.pylintrc dstartools/ ./*.py
 
 .PHONY: install-prepush
 install-prepush:

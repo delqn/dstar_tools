@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-class colors:
+
+class Colors(object):
     PURPLE = '\033[95m'
     BLUE = '\033[94m'
     GREEN = '\033[92m'
     YELLOW = '\033[93m'
     RED = '\033[91m'
-    X = '\033[0m'
-
+    RESET = '\033[0m'
